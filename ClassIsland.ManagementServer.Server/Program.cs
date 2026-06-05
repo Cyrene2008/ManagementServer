@@ -37,6 +37,23 @@ if (setupMode)
     }
 }
 builder.Configuration.AddJsonFile("./data/appsettings.json", optional: true, reloadOnChange: true);
+builder.WebHost.ConfigureKestrel((context, options) =>
+{
+    var grpcCertPath = context.Configuration["Kestrel:GrpcCertPath"];
+    var grpcCertPassword = context.Configuration["Kestrel:GrpcCertPassword"];
+    options.ListenLocalhost(20721, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+    });
+    options.ListenLocalhost(20722, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+        if (!string.IsNullOrEmpty(grpcCertPath))
+        {
+            listenOptions.UseHttps(grpcCertPath, grpcCertPassword ?? "");
+        }
+    });
+});
 builder.Services.AddDbContext<ManagementServerContext>(options =>
 {
     var dbType = builder.Configuration["DatabaseType"];
