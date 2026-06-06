@@ -412,3 +412,4 @@ sketch
 
 ClassIsland.ManagementServer.Server/data/appsettings.json
 data/
+start-vite.bat
