@@ -10,6 +10,7 @@ const form = reactive({
   command: '',
   shell: 0,
   timeoutSeconds: 30,
+  pin: '',
 });
 const isSending = ref(false);
 const commands = ref<RemoteCommand[]>([]);
@@ -178,6 +179,9 @@ onUnmounted(() => {
         </n-form-item>
         <n-form-item label="超时（秒）">
           <n-input-number v-model:value="form.timeoutSeconds" :min="5" :max="300" />
+        </n-form-item>
+        <n-form-item label="远程协助 PIN">
+          <n-input v-model:value="form.pin" placeholder="输入客户端显示的 6 位 PIN" maxlength="6" show-count />
         </n-form-item>
         <n-form-item :show-label="false">
           <n-space>

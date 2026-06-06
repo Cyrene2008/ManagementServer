@@ -5,6 +5,7 @@ export interface ExecuteCommandRequest {
   command: string;
   shell: number;
   timeoutSeconds: number;
+  pin: string;
 }
 
 export interface RemoteCommand {

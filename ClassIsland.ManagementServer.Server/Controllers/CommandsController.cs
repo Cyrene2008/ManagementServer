@@ -36,6 +36,13 @@ public class CommandsController(
         if (client == null)
             return NotFound(new Error("客户端不存在"));
 
+        // 验证远程协助 PIN
+        if (!client.RemoteAssistEnabled)
+            return BadRequest(new Error("该客户端未启用远程协助"));
+
+        if (string.IsNullOrEmpty(request.Pin) || client.RemoteAssistPin != request.Pin)
+            return Unauthorized(new Error("PIN 码错误"));
+
         var command = new RemoteCommand
         {
             ClientCuid = request.ClientCuid,
@@ -131,6 +138,7 @@ public class ExecuteCommandRequest
     public string Command { get; set; } = "";
     public int Shell { get; set; } = 0;
     public int TimeoutSeconds { get; set; } = 30;
+    public string Pin { get; set; } = "";
 }
 
 public class CommandResultRequest
