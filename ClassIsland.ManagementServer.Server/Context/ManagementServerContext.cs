@@ -52,6 +52,8 @@ public partial class ManagementServerContext : IdentityDbContext<User, Role, str
 
     public virtual DbSet<ClientConfigSnapshot> ClientConfigSnapshots { get; set; }
 
+    public virtual DbSet<RemoteCommand> RemoteCommands { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         MapJsonConverter(modelBuilder.Entity<ProfileClassplan>().Property(e => e.AttachedObjects));
