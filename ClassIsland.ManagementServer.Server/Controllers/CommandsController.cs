@@ -1,10 +1,12 @@
-using System.Text.Json;
 using ClassIsland.ManagementServer.Server.Authorization;
 using ClassIsland.ManagementServer.Server.Context;
 using ClassIsland.ManagementServer.Server.Entities;
+using ClassIsland.ManagementServer.Server.Enums;
 using ClassIsland.ManagementServer.Server.Extensions;
 using ClassIsland.ManagementServer.Server.Models;
 using ClassIsland.ManagementServer.Server.Services;
+using ClassIsland.Shared.Protobuf.Command;
+using ClassIsland.Shared.Protobuf.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,13 +19,11 @@ namespace ClassIsland.ManagementServer.Server.Controllers;
 public class CommandsController(
     ILogger<CommandsController> logger,
     ManagementServerContext dbContext,
-    WebSocketConnectionManager wsManager,
-    CyreneMspConnectionService connectionService) : ControllerBase
+    ClientCommandDeliverService commandDeliverService) : ControllerBase
 {
     public ILogger<CommandsController> Logger { get; } = logger;
     public ManagementServerContext DbContext { get; } = dbContext;
-    public WebSocketConnectionManager WsManager { get; } = wsManager;
-    public CyreneMspConnectionService ConnectionService { get; } = connectionService;
+    public ClientCommandDeliverService CommandDeliverService { get; } = commandDeliverService;
 
     /// <summary>
     /// 发送命令到客户端
@@ -54,28 +54,25 @@ public class CommandsController(
         await DbContext.RemoteCommands.AddAsync(command);
         await DbContext.SaveChangesAsync();
 
-        // 尝试通过 WebSocket 推送
-        var wsMessage = JsonSerializer.Serialize(new
+        // 通过 gRPC 双向流推送命令（同广播机制）
+        var payload = new RemoteExecuteCommand
         {
-            type = "ExecuteCommand",
-            payload = new
+            CommandId = command.Id,
+            Command = command.Command,
+            Shell = command.Shell,
+            TimeoutSeconds = command.TimeoutSeconds
+        };
+
+        await CommandDeliverService.DeliverCommandAsync(
+            CommandTypes.ExecuteCommand,
+            payload,
+            new ObjectsAssignee
             {
-                commandId = command.Id,
-                command = command.Command,
-                shell = command.Shell,
-                timeoutSeconds = command.TimeoutSeconds
-            }
-        });
+                AssigneeType = AssigneeTypes.ClientUid,
+                TargetClientCuid = request.ClientCuid
+            });
 
-        var sent = await WsManager.SendAsync(request.ClientCuid, wsMessage);
-
-        if (!sent)
-        {
-            // 降级到 gRPC（客户端通过 ListenCommand 流接收）
-            Logger.LogInformation("WebSocket 推送失败，命令 {Id} 将通过 gRPC 或心跳拉取", command.Id);
-        }
-
-        Logger.LogInformation("已发送命令 {Id} 到客户端 {Cuid}", command.Id, request.ClientCuid);
+        Logger.LogInformation("已通过 gRPC 发送命令 {Id} 到客户端 {Cuid}", command.Id, request.ClientCuid);
         return Ok(command);
     }
 
