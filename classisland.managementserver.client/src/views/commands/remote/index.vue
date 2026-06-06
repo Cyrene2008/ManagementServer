@@ -2,11 +2,11 @@
 import { ref, reactive, onMounted, onUnmounted, h } from 'vue';
 import { NCard, NForm, NFormItem, NSelect, NButton, NDataTable, NInputNumber, useMessage, NTag, NSpace, NInput } from 'naive-ui';
 import { executeCommand, listCommands, type RemoteCommand } from '@/api/commands/remote';
-import { ObjectsAssignee } from '@/api/globals';
+import { Alova } from '@/utils/http/alova/index';
 
 const message = useMessage();
-const targets = ref<Array<ObjectsAssignee>>([]);
 const form = reactive({
+  clientCuid: '',
   command: '',
   shell: 0,
   timeoutSeconds: 30,
@@ -16,6 +16,7 @@ const isSending = ref(false);
 const commands = ref<RemoteCommand[]>([]);
 const loading = ref(false);
 const expandedRows = ref<Set<number>>(new Set());
+const clientOptions = ref<{ label: string; value: string }[]>([]);
 let autoRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 
 const shellOptions = [
@@ -101,8 +102,20 @@ const columns = [
   },
 ];
 
+async function loadClients() {
+  try {
+    const res = await Alova.Get('/api/v1/clients_registry/all', { params: { pageIndex: 1, pageSize: 100 } });
+    clientOptions.value = (res.items || []).map((c: any) => ({
+      label: `${c.id} (${c.cuid})`,
+      value: c.cuid,
+    }));
+  } catch (e) {
+    console.error('加载客户端列表失败', e);
+  }
+}
+
 async function sendCommand() {
-  if (!targets.value || targets.value.length === 0) {
+  if (!form.clientCuid) {
     message.warning('请选择目标客户端');
     return;
   }
@@ -117,19 +130,13 @@ async function sendCommand() {
 
   isSending.value = true;
   try {
-    // 对每个目标发送命令
-    for (const target of targets.value) {
-      const clientCuid = target.targetClientCuid || target.targetClientId;
-      if (!clientCuid) continue;
-
-      await executeCommand({
-        clientCuid,
-        command: form.command,
-        shell: form.shell,
-        timeoutSeconds: form.timeoutSeconds,
-        pin: form.pin,
-      });
-    }
+    await executeCommand({
+      clientCuid: form.clientCuid,
+      command: form.command,
+      shell: form.shell,
+      timeoutSeconds: form.timeoutSeconds,
+      pin: form.pin,
+    });
     message.success('命令已发送');
     form.command = '';
     await loadCommands();
@@ -161,7 +168,10 @@ async function loadCommands() {
   }
 }
 
-onMounted(loadCommands);
+onMounted(() => {
+  loadClients();
+  loadCommands();
+});
 
 onUnmounted(() => {
   if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
@@ -172,8 +182,13 @@ onUnmounted(() => {
   <div class="d-flex flex-col gap-y-4">
     <n-card title="远程命令执行">
       <n-form :model="form" label-placement="left" label-width="auto" style="max-width: 700px">
-        <n-form-item label="目标">
-          <AssigneeList v-model:value="targets" />
+        <n-form-item label="目标客户端">
+          <n-select
+            v-model:value="form.clientCuid"
+            :options="clientOptions"
+            filterable
+            placeholder="选择客户端实例"
+          />
         </n-form-item>
         <n-form-item label="Shell 类型">
           <n-select v-model:value="form.shell" :options="shellOptions" />

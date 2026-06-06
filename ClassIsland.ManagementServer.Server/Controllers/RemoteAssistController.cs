@@ -30,7 +30,7 @@ public class RemoteAssistController(
         return Ok(new
         {
             enabled = client.RemoteAssistEnabled,
-            hasPin = !string.IsNullOrEmpty(client.RemoteAssistPin)
+            pin = client.RemoteAssistPin ?? ""
         });
     }
 
