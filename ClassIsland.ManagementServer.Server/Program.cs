@@ -37,20 +37,25 @@ if (setupMode)
     }
 }
 builder.Configuration.AddJsonFile("./data/appsettings.json", optional: true, reloadOnChange: true);
-builder.WebHost.ConfigureKestrel((context, options) =>
+builder.WebHost.ConfigureKestrel(options =>
 {
-    var grpcCertPath = context.Configuration["Kestrel:GrpcCertPath"];
-    var grpcCertPassword = context.Configuration["Kestrel:GrpcCertPassword"];
-    options.ListenLocalhost(20721, listenOptions =>
+    options.ListenLocalhost(20723, listenOptions =>
     {
         listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
     });
-    options.ListenLocalhost(20722, listenOptions =>
+    options.ListenLocalhost(20724, listenOptions =>
     {
         listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-        if (!string.IsNullOrEmpty(grpcCertPath))
+        using var store = new System.Security.Cryptography.X509Certificates.X509Store(
+            System.Security.Cryptography.X509Certificates.StoreName.My,
+            System.Security.Cryptography.X509Certificates.StoreLocation.LocalMachine);
+        store.Open(System.Security.Cryptography.X509Certificates.OpenFlags.ReadOnly);
+        var certs = store.Certificates.Find(
+            System.Security.Cryptography.X509Certificates.X509FindType.FindBySubjectName,
+            "localhost", false);
+        if (certs.Count > 0)
         {
-            listenOptions.UseHttps(grpcCertPath, grpcCertPassword ?? "");
+            listenOptions.UseHttps(certs[0]);
         }
     });
 });
@@ -124,8 +129,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 
 app.MapControllers();
 app.MapGrpcService<ClientRegisterService>();
