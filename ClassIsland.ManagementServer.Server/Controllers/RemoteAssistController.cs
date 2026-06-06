@@ -109,6 +109,25 @@ public class RemoteAssistController(
         Logger.LogInformation("管理员禁用客户端 {Cuid} 的远程协助", cuid);
         return Ok(new { success = true });
     }
+
+    /// <summary>
+    /// 重置远程协助 PIN（管理端调用）
+    /// </summary>
+    [HttpPost("reset-pin")]
+    public async Task<IActionResult> ResetPin(Guid cuid)
+    {
+        var client = await DbContext.Clients.FindAsync(cuid);
+        if (client == null)
+            return NotFound(new Error("客户端不存在"));
+
+        var newPin = Random.Shared.Next(100000, 999999).ToString();
+        client.RemoteAssistPin = newPin;
+        client.UpdatedTime = DateTime.Now;
+        await DbContext.SaveChangesAsync();
+
+        Logger.LogInformation("管理员重置客户端 {Cuid} 的远程协助 PIN", cuid);
+        return Ok(new { success = true, pin = newPin });
+    }
 }
 
 public class EnableRemoteAssistRequest
