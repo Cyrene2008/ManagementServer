@@ -13,6 +13,14 @@ const showJsonEditor = ref(false);
 const rawJson = ref('');
 const editingTrigger = ref<{ wfIndex: number; trigIndex: number } | null>(null);
 const editingAction = ref<{ wfIndex: number; actIndex: number } | null>(null);
+const editingTriggerItem = computed(() => {
+  if (!editingTrigger.value) return null;
+  return workflows.value[editingTrigger.value.wfIndex]?.Triggers[editingTrigger.value.trigIndex] ?? null;
+});
+const editingActionItem = computed(() => {
+  if (!editingAction.value) return null;
+  return workflows.value[editingAction.value.wfIndex]?.ActionSet.Actions[editingAction.value.actIndex] ?? null;
+});
 
 const triggerTypes = [
   { id: 'classisland.cron', name: 'cron 定时', icon: '⏰', hasSettings: true, settingsFields: [{ key: 'CronExpression', label: 'Cron 表达式', type: 'string', default: '* * * * *' }] },
@@ -341,13 +349,13 @@ onMounted(loadClients);
 
     <!-- 触发器设置弹窗 -->
     <n-modal v-model:show="editingTrigger" title="触发器设置" preset="dialog" style="width: 500px">
-      <template v-if="editingTrigger && workflows[editingTrigger.wfIndex]?.Triggers[editingTrigger.trigIndex] as trigger">
+      <template v-if="editingTriggerItem">
         <n-form label-placement="left" label-width="100px">
-          <n-form-item v-for="field in getTriggerInfo(trigger.Id).settingsFields" :key="field.key" :label="field.label">
-            <n-input v-if="field.type === 'string'" v-model:value="trigger.Settings[field.key]" />
-            <n-input-number v-else-if="field.type === 'number'" v-model:value="trigger.Settings[field.key]" />
-            <n-switch v-else-if="field.type === 'bool'" v-model:value="trigger.Settings[field.key]" />
-            <n-select v-else-if="field.type === 'select'" v-model:value="trigger.Settings[field.key]" :options="field.options || []" />
+          <n-form-item v-for="field in getTriggerInfo(editingTriggerItem.Id).settingsFields" :key="field.key" :label="field.label">
+            <n-input v-if="field.type === 'string'" v-model:value="editingTriggerItem.Settings[field.key]" />
+            <n-input-number v-else-if="field.type === 'number'" v-model:value="editingTriggerItem.Settings[field.key]" />
+            <n-switch v-else-if="field.type === 'bool'" v-model:value="editingTriggerItem.Settings[field.key]" />
+            <n-select v-else-if="field.type === 'select'" v-model:value="editingTriggerItem.Settings[field.key]" :options="field.options || []" />
           </n-form-item>
         </n-form>
       </template>
@@ -358,13 +366,13 @@ onMounted(loadClients);
 
     <!-- 动作设置弹窗 -->
     <n-modal v-model:show="editingAction" title="动作设置" preset="dialog" style="width: 500px">
-      <template v-if="editingAction && workflows[editingAction.wfIndex]?.ActionSet.Actions[editingAction.actIndex] as action">
+      <template v-if="editingActionItem">
         <n-form label-placement="left" label-width="100px">
-          <n-form-item v-for="field in getActionInfo(action.Id).settingsFields" :key="field.key" :label="field.label">
-            <n-input v-if="field.type === 'string'" v-model:value="action.Settings[field.key]" />
-            <n-input-number v-else-if="field.type === 'number'" v-model:value="action.Settings[field.key]" />
-            <n-switch v-else-if="field.type === 'bool'" v-model:value="action.Settings[field.key]" />
-            <n-select v-else-if="field.type === 'select'" v-model:value="action.Settings[field.key]" :options="field.options || []" />
+          <n-form-item v-for="field in getActionInfo(editingActionItem.Id).settingsFields" :key="field.key" :label="field.label">
+            <n-input v-if="field.type === 'string'" v-model:value="editingActionItem.Settings[field.key]" />
+            <n-input-number v-else-if="field.type === 'number'" v-model:value="editingActionItem.Settings[field.key]" />
+            <n-switch v-else-if="field.type === 'bool'" v-model:value="editingActionItem.Settings[field.key]" />
+            <n-select v-else-if="field.type === 'select'" v-model:value="editingActionItem.Settings[field.key]" :options="field.options || []" />
           </n-form-item>
         </n-form>
       </template>

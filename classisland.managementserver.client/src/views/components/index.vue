@@ -12,6 +12,14 @@ const isLoading = ref(false);
 const showJsonEditor = ref(false);
 const rawJson = ref('');
 const editingComponent = ref<{ lineIndex: number; compIndex: number; childIndex?: number } | null>(null);
+const editingComp = computed(() => {
+  if (!editingComponent.value) return null;
+  const { lineIndex, compIndex, childIndex } = editingComponent.value;
+  const comp = layout.value[lineIndex]?.Children[compIndex];
+  if (!comp) return null;
+  if (childIndex !== undefined && comp.Children) return comp.Children[childIndex];
+  return comp;
+});
 const addCompKeys = ref<Record<number, number>>({});
 const addChildKeys = ref<Record<string, number>>({});
 
@@ -326,76 +334,76 @@ onMounted(loadClients);
 
     <!-- 组件属性编辑弹窗 -->
     <n-modal v-model:show="editingComponent" title="组件属性" preset="dialog" style="width: 600px">
-      <template v-if="getEditingComp() as comp">
+      <template v-if="editingComp">
         <n-form label-placement="left" label-width="120px">
           <n-form-item label="组件名称">
-            <n-input v-model:value="comp.NameCache" />
+            <n-input v-model:value="editingComp.NameCache" />
           </n-form-item>
 
           <!-- 文本组件 -->
-          <template v-if="comp.Id.toLowerCase() === 'ee8f66bd-c423-4e7c-ab46-aa9976b00e08'">
+          <template v-if="editingComp.Id.toLowerCase() === 'ee8f66bd-c423-4e7c-ab46-aa9976b00e08'">
             <n-form-item label="文本内容">
-              <n-input v-model:value="comp.Settings.TextContent" type="textarea" />
+              <n-input v-model:value="editingComp.Settings.TextContent" type="textarea" />
             </n-form-item>
             <n-form-item label="字号">
-              <n-input-number v-model:value="comp.Settings.FontSize" :min="8" :max="72" />
+              <n-input-number v-model:value="editingComp.Settings.FontSize" :min="8" :max="72" />
             </n-form-item>
             <n-form-item label="自定义颜色">
-              <n-switch v-model:value="comp.Settings.UseCustomFontColor" />
+              <n-switch v-model:value="editingComp.Settings.UseCustomFontColor" />
             </n-form-item>
-            <n-form-item label="字体颜色" v-if="comp.Settings.UseCustomFontColor">
-              <n-color-picker v-model:value="comp.Settings.FontColor" />
+            <n-form-item label="字体颜色" v-if="editingComp.Settings.UseCustomFontColor">
+              <n-color-picker v-model:value="editingComp.Settings.FontColor" />
             </n-form-item>
           </template>
 
           <!-- 时钟组件 -->
-          <template v-if="comp.Id.toLowerCase() === '9e1af71d-8f77-4b21-a342-448787104dd9'">
+          <template v-if="editingComp.Id.toLowerCase() === '9e1af71d-8f77-4b21-a342-448787104dd9'">
             <n-form-item label="显示秒数">
-              <n-switch v-model:value="comp.Settings.ShowSeconds" />
+              <n-switch v-model:value="editingComp.Settings.ShowSeconds" />
             </n-form-item>
             <n-form-item label="显示实时时间">
-              <n-switch v-model:value="comp.Settings.ShowRealTime" />
+              <n-switch v-model:value="editingComp.Settings.ShowRealTime" />
             </n-form-item>
             <n-form-item label="闪烁分隔符">
-              <n-switch v-model:value="comp.Settings.FlashTimeSeparator" />
+              <n-switch v-model:value="editingComp.Settings.FlashTimeSeparator" />
             </n-form-item>
           </template>
 
           <!-- 课程表组件 -->
-          <template v-if="comp.Id.toLowerCase() === '1db2017d-e374-4bc6-9d57-0b4adf03a6b8'">
+          <template v-if="editingComp.Id.toLowerCase() === '1db2017d-e374-4bc6-9d57-0b4adf03a6b8'">
             <n-form-item label="显示额外信息">
-              <n-switch v-model:value="comp.Settings.ShowExtraInfoOnTimePoint" />
+              <n-switch v-model:value="editingComp.Settings.ShowExtraInfoOnTimePoint" />
             </n-form-item>
             <n-form-item label="启用倒计时">
-              <n-switch v-model:value="comp.Settings.IsCountdownEnabled" />
+              <n-switch v-model:value="editingComp.Settings.IsCountdownEnabled" />
             </n-form-item>
             <n-form-item label="倒计时秒数">
-              <n-input-number v-model:value="comp.Settings.CountdownSeconds" :min="0" :max="300" />
+              <n-input-number v-model:value="editingComp.Settings.CountdownSeconds" :min="0" :max="300" />
             </n-form-item>
             <n-form-item label="课程间距">
-              <n-input-number v-model:value="comp.Settings.ScheduleSpacing" :min="0" :max="10" />
+              <n-input-number v-model:value="editingComp.Settings.ScheduleSpacing" :min="0" :max="10" />
             </n-form-item>
             <n-form-item label="仅显示当前课程">
-              <n-switch v-model:value="comp.Settings.ShowCurrentLessonOnlyOnClass" />
+              <n-switch v-model:value="editingComp.Settings.ShowCurrentLessonOnlyOnClass" />
             </n-form-item>
             <n-form-item label="隐藏已完成课程">
-              <n-switch v-model:value="comp.Settings.HideFinishedClass" />
+              <n-switch v-model:value="editingComp.Settings.HideFinishedClass" />
             </n-form-item>
           </template>
 
           <!-- 天气组件 -->
-          <template v-if="comp.Id.toLowerCase() === 'ca495086-e297-4beb-9603-c5c1c1a8551e'">
+          <template v-if="editingComp.Id.toLowerCase() === 'ca495086-e297-4beb-9603-c5c1c1a8551e'">
             <n-form-item label="显示预警">
-              <n-switch v-model:value="comp.Settings.ShowAlerts" />
+              <n-switch v-model:value="editingComp.Settings.ShowAlerts" />
             </n-form-item>
             <n-form-item label="显示降雨时间">
-              <n-switch v-model:value="comp.Settings.ShowRainTime" />
+              <n-switch v-model:value="editingComp.Settings.ShowRainTime" />
             </n-form-item>
             <n-form-item label="显示天气信息">
-              <n-switch v-model:value="comp.Settings.ShowMainWeatherInfo" />
+              <n-switch v-model:value="editingComp.Settings.ShowMainWeatherInfo" />
             </n-form-item>
             <n-form-item label="天气信息类型">
-              <n-select v-model:value="comp.Settings.MainWeatherInfoKind" :options="[
+              <n-select v-model:value="editingComp.Settings.MainWeatherInfoKind" :options="[
                 { label: '当前天气+温度', value: 0 },
                 { label: '湿度', value: 1 },
                 { label: '风力', value: 2 },
@@ -407,58 +415,58 @@ onMounted(loadClients);
           </template>
 
           <!-- 倒计时组件 -->
-          <template v-if="comp.Id.toLowerCase() === '7c645d35-8151-48ba-b4ac-15017460d994'">
+          <template v-if="editingComp.Id.toLowerCase() === '7c645d35-8151-48ba-b4ac-15017460d994'">
             <n-form-item label="倒计时名称">
-              <n-input v-model:value="comp.Settings.CountDownName" />
+              <n-input v-model:value="editingComp.Settings.CountDownName" />
             </n-form-item>
             <n-form-item label="字号">
-              <n-input-number v-model:value="comp.Settings.FontSize" :min="8" :max="72" />
+              <n-input-number v-model:value="editingComp.Settings.FontSize" :min="8" :max="72" />
             </n-form-item>
             <n-form-item label="紧凑模式">
-              <n-switch v-model:value="comp.Settings.IsCompactModeEnabled" />
+              <n-switch v-model:value="editingComp.Settings.IsCompactModeEnabled" />
             </n-form-item>
             <n-form-item label="显示进度">
-              <n-switch v-model:value="comp.Settings.ShowProgress" />
+              <n-switch v-model:value="editingComp.Settings.ShowProgress" />
             </n-form-item>
             <n-form-item label="自定义格式">
-              <n-input v-model:value="comp.Settings.CustomStringFormat" />
+              <n-input v-model:value="editingComp.Settings.CustomStringFormat" />
             </n-form-item>
           </template>
 
           <!-- 轮播容器 -->
-          <template v-if="comp.Id.toLowerCase() === '7e19a113-d281-4f33-970a-834a0b78b5ad'">
+          <template v-if="editingComp.Id.toLowerCase() === '7e19a113-d281-4f33-970a-834a0b78b5ad'">
             <n-form-item label="轮播秒数">
-              <n-input-number v-model:value="comp.Settings.SlideSeconds" :min="1" :max="120" />
+              <n-input-number v-model:value="editingComp.Settings.SlideSeconds" :min="1" :max="120" />
             </n-form-item>
             <n-form-item label="轮播模式">
-              <n-select v-model:value="comp.Settings.SlideMode" :options="[
+              <n-select v-model:value="editingComp.Settings.SlideMode" :options="[
                 { label: '循环', value: 0 },
                 { label: '随机', value: 1 },
                 { label: '乒乓', value: 2 },
               ]" />
             </n-form-item>
             <n-form-item label="启用动画">
-              <n-switch v-model:value="comp.Settings.IsAnimationEnabled" />
+              <n-switch v-model:value="editingComp.Settings.IsAnimationEnabled" />
             </n-form-item>
           </template>
 
           <!-- 滚动容器 -->
-          <template v-if="comp.Id.toLowerCase() === '70fcd5ea-3fae-4e06-aca2-4f4df47f9acd'">
+          <template v-if="editingComp.Id.toLowerCase() === '70fcd5ea-3fae-4e06-aca2-4f4df47f9acd'">
             <n-form-item label="速度(px/s)">
-              <n-input-number v-model:value="comp.Settings.SpeedPixelPerSecond" :min="1" :max="200" />
+              <n-input-number v-model:value="editingComp.Settings.SpeedPixelPerSecond" :min="1" :max="200" />
             </n-form-item>
             <n-form-item label="启用暂停">
-              <n-switch v-model:value="comp.Settings.IsPauseEnabled" />
+              <n-switch v-model:value="editingComp.Settings.IsPauseEnabled" />
             </n-form-item>
             <n-form-item label="暂停秒数">
-              <n-input-number v-model:value="comp.Settings.PauseSeconds" :min="0" :max="60" />
+              <n-input-number v-model:value="editingComp.Settings.PauseSeconds" :min="0" :max="60" />
             </n-form-item>
           </template>
 
           <!-- 通用布局设置 -->
           <n-divider>布局设置</n-divider>
           <n-form-item label="对齐方式">
-            <n-select v-model:value="comp.HorizontalAlignment" :options="[
+            <n-select v-model:value="editingComp.HorizontalAlignment" :options="[
               { label: '左对齐', value: 0 },
               { label: '居中', value: 1 },
               { label: '右对齐', value: 2 },
@@ -466,27 +474,27 @@ onMounted(loadClients);
             ]" />
           </n-form-item>
           <n-form-item label="最小宽度">
-            <n-switch v-model:value="comp.IsMinWidthEnabled" />
-            <n-input-number v-if="comp.IsMinWidthEnabled" v-model:value="comp.MinWidth" :min="0" :max="2000" style="margin-left: 8px" />
+            <n-switch v-model:value="editingComp.IsMinWidthEnabled" />
+            <n-input-number v-if="editingComp.IsMinWidthEnabled" v-model:value="editingComp.MinWidth" :min="0" :max="2000" style="margin-left: 8px" />
           </n-form-item>
           <n-form-item label="最大宽度">
-            <n-switch v-model:value="comp.IsMaxWidthEnabled" />
-            <n-input-number v-if="comp.IsMaxWidthEnabled" v-model:value="comp.MaxWidth" :min="0" :max="2000" style="margin-left: 8px" />
+            <n-switch v-model:value="editingComp.IsMaxWidthEnabled" />
+            <n-input-number v-if="editingComp.IsMaxWidthEnabled" v-model:value="editingComp.MaxWidth" :min="0" :max="2000" style="margin-left: 8px" />
           </n-form-item>
           <n-form-item label="固定宽度">
-            <n-switch v-model:value="comp.IsFixedWidthEnabled" />
-            <n-input-number v-if="comp.IsFixedWidthEnabled" v-model:value="comp.FixedWidth" :min="0" :max="2000" style="margin-left: 8px" />
+            <n-switch v-model:value="editingComp.IsFixedWidthEnabled" />
+            <n-input-number v-if="editingComp.IsFixedWidthEnabled" v-model:value="editingComp.FixedWidth" :min="0" :max="2000" style="margin-left: 8px" />
           </n-form-item>
 
           <!-- 隐藏规则 -->
           <n-divider>隐藏规则</n-divider>
           <n-form-item label="按规则隐藏">
-            <n-switch v-model:value="comp.HideOnRule" />
+            <n-switch v-model:value="editingComp.HideOnRule" />
           </n-form-item>
-          <div v-if="comp.HideOnRule" style="margin-bottom: 12px">
+          <div v-if="editingComp.HideOnRule" style="margin-bottom: 12px">
             <RulesetEditor
-              :value="comp.HidingRules ?? (comp.HidingRules = { Mode: 0, IsReversed: false, Groups: [] })"
-              @update-value="(v: any) => comp.HidingRules = v"
+              :value="editingComp.HidingRules ?? (editingComp.HidingRules = { Mode: 0, IsReversed: false, Groups: [] })"
+              @update-value="(v: any) => editingComp.HidingRules = v"
             />
           </div>
         </n-form>
