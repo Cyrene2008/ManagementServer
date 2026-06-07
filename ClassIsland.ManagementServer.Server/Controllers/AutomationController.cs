@@ -66,12 +66,12 @@ public class AutomationController(
         // 推送到客户端
         var pushPayload = new PushConfig
         {
-            ConfigType = 0, // AppSettings (automation is loaded with settings)
+            ConfigType = 4, // CurrentAutomation
             ConfigJson = config.WorkflowsJson
         };
         await CommandDeliverService.DeliverCommandAsync(
-            CommandTypes.DataUpdated,
-            new ClassIsland.Shared.Protobuf.Server.ClientCommandDeliverScRsp(),
+            CommandTypes.PushConfig,
+            pushPayload,
             new ObjectsAssignee
             {
                 AssigneeType = AssigneeTypes.ClientUid,

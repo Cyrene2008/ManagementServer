@@ -173,7 +173,7 @@ public class ClientComponentsController(
         // 推送到客户端
         var pushPayload = new PushConfig
         {
-            ConfigType = 2, // Components
+            ConfigType = 3, // CurrentComponent
             ConfigJson = config.LayoutJson
         };
         await CommandDeliverService.DeliverCommandAsync(
