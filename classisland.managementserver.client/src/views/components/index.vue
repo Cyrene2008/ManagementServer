@@ -3,6 +3,7 @@ import { ref, reactive, onMounted, computed, h, watch } from 'vue';
 import { NCard, NButton, NSelect, useMessage, NSpace, NTag, NModal, NForm, NFormItem, NInput, NCollapse, NCollapseItem, NSwitch, NPopconfirm, NDivider, NInputNumber, NColorPicker, NSlider } from 'naive-ui';
 import { getClientComponents, updateClientComponents, requestClientUpload } from '@/api/components/index';
 import { Alova } from '@/utils/http/alova/index';
+import RulesetEditor from '@/views/automation/RulesetEditor.vue';
 
 const message = useMessage();
 const selectedClient = ref('');
@@ -53,6 +54,7 @@ interface ComponentItem {
   MarginRight?: number;
   MarginBottom?: number;
   HideOnRule?: boolean;
+  HidingRules?: any;
 }
 
 interface LineItem {
@@ -475,6 +477,18 @@ onMounted(loadClients);
             <n-switch v-model:value="comp.IsFixedWidthEnabled" />
             <n-input-number v-if="comp.IsFixedWidthEnabled" v-model:value="comp.FixedWidth" :min="0" :max="2000" style="margin-left: 8px" />
           </n-form-item>
+
+          <!-- 隐藏规则 -->
+          <n-divider>隐藏规则</n-divider>
+          <n-form-item label="按规则隐藏">
+            <n-switch v-model:value="comp.HideOnRule" />
+          </n-form-item>
+          <div v-if="comp.HideOnRule" style="margin-bottom: 12px">
+            <RulesetEditor
+              :value="comp.HidingRules ?? (comp.HidingRules = { Mode: 0, IsReversed: false, Groups: [] })"
+              @update-value="(v: any) => comp.HidingRules = v"
+            />
+          </div>
         </n-form>
       </template>
       <template #action>

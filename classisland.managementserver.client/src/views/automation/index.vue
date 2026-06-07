@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { NCard, NButton, NSelect, useMessage, NSpace, NTag, NModal, NForm, NFormItem, NInput, NSwitch, NPopconfirm, NInputNumber, NDivider, NCollapse, NCollapseItem } from 'naive-ui';
 import { getClientAutomation, updateClientAutomation, requestAutomationUpload } from '@/api/automation/index';
 import { Alova } from '@/utils/http/alova/index';
+import RulesetEditor from './RulesetEditor.vue';
 
 const message = useMessage();
 const selectedClient = ref('');
@@ -298,7 +299,12 @@ onMounted(loadClients);
               条件（规则集）
               <n-switch v-model:value="workflow.IsConditionEnabled" size="small" style="margin-left: 8px" />
             </div>
-            <n-tag v-if="workflow.IsConditionEnabled" type="warning" size="small">规则集已启用（需在客户端配置）</n-tag>
+            <div v-if="workflow.IsConditionEnabled" style="margin-top: 8px">
+              <RulesetEditor
+                :value="workflow.Ruleset ?? (workflow.Ruleset = { Mode: 0, IsReversed: false, Groups: [] })"
+                @update:value="(v: any) => workflow.Ruleset = v"
+              />
+            </div>
           </div>
 
           <!-- 动作 -->
