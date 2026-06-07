@@ -90,7 +90,7 @@ const mainTableColumns : DataTableColumns<IClassInfoEditingEntry> = [
   },
   {
     title: "操作",
-    key: "endSecond",
+    key: "actions",
     render(x){
       return h(
         "div", {
@@ -100,7 +100,7 @@ const mainTableColumns : DataTableColumns<IClassInfoEditingEntry> = [
             size: "small",
             onClick(e) {
               const i = timeLayout.value?.layouts.indexOf(x);
-              delete timeLayout.value?.layouts[i];
+              if (i >= 0) timeLayout.value?.layouts.splice(i, 1);
             },
           }, {
             default: () => "删除"
