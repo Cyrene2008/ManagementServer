@@ -143,7 +143,7 @@ function formatSafeTime(date: Date) {
 }
 
 function contactDateTime(date: Date, time: string) {
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}T${time}`
+  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1, 2)}-${padNumber(date.getDate(), 2)}T${time}`
 }
 
 function insertTimePointAfter(type, index) {
@@ -210,8 +210,8 @@ async function saveTimeLayout() {
   try{
     isSaving.value = true;
     const today = new Date();
-    for (const i in timeLayout.layouts) {
-      const point = timeLayout.layouts[i];
+    const layouts = timeLayout.value?.layouts ?? [];
+    for (const point of layouts) {
       point.startSecond = contactDateTime(today, point.startSecondSafe);
       point.endSecond = contactDateTime(today, point.endSecondSafe);
     }
