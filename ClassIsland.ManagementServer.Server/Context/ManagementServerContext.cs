@@ -60,6 +60,10 @@ public partial class ManagementServerContext : IdentityDbContext<User, Role, str
 
     public virtual DbSet<ClientAutomationConfig> ClientAutomationConfigs { get; set; }
 
+    public virtual DbSet<ClientPluginInfo> ClientPluginInfos { get; set; }
+
+    public virtual DbSet<ClientPluginInstallRequest> ClientPluginInstallRequests { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         MapJsonConverter(modelBuilder.Entity<ProfileClassplan>().Property(e => e.AttachedObjects));
