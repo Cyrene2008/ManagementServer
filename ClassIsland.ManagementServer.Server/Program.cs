@@ -102,6 +102,7 @@ builder.Services.AddScoped<OrganizationSettingsService>();
 builder.Services.AddSingleton<ObjectsCacheService>();
 builder.Services.AddSingleton<CyreneMspConnectionService>();
 builder.Services.AddSingleton<WebSocketConnectionManager>();
+builder.Services.AddSingleton<PendingConfigRequestService>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminAccessHandler>();
 builder.WebHost.ConfigureKestrel((context, options) =>
 {

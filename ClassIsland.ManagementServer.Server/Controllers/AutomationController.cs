@@ -18,11 +18,13 @@ namespace ClassIsland.ManagementServer.Server.Controllers;
 public class AutomationController(
     ILogger<AutomationController> logger,
     ManagementServerContext dbContext,
-    ClientCommandDeliverService commandDeliverService) : ControllerBase
+    ClientCommandDeliverService commandDeliverService,
+    PendingConfigRequestService pendingConfigRequests) : ControllerBase
 {
     public ILogger<AutomationController> Logger { get; } = logger;
     public ManagementServerContext DbContext { get; } = dbContext;
     public ClientCommandDeliverService CommandDeliverService { get; } = commandDeliverService;
+    public PendingConfigRequestService PendingConfigRequests { get; } = pendingConfigRequests;
 
     /// <summary>
     /// 获取客户端自动化配置
@@ -94,6 +96,8 @@ public class AutomationController(
             RequestGuid = Guid.NewGuid().ToString(),
             ConfigType = ConfigTypes.CurrentAutomation
         };
+
+        PendingConfigRequests.TrackRequest(payload.RequestGuid, ConfigTypes.CurrentAutomation, cuid);
 
         await CommandDeliverService.DeliverCommandAsync(
             CommandTypes.GetClientConfig,

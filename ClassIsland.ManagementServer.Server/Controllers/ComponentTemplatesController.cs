@@ -120,11 +120,13 @@ public class ComponentTemplatesController(
 public class ClientComponentsController(
     ILogger<ClientComponentsController> logger,
     ManagementServerContext dbContext,
-    ClientCommandDeliverService commandDeliverService) : ControllerBase
+    ClientCommandDeliverService commandDeliverService,
+    PendingConfigRequestService pendingConfigRequests) : ControllerBase
 {
     public ILogger<ClientComponentsController> Logger { get; } = logger;
     public ManagementServerContext DbContext { get; } = dbContext;
     public ClientCommandDeliverService CommandDeliverService { get; } = commandDeliverService;
+    public PendingConfigRequestService PendingConfigRequests { get; } = pendingConfigRequests;
 
     /// <summary>
     /// 获取客户端组件配置
@@ -201,6 +203,8 @@ public class ClientComponentsController(
             RequestGuid = Guid.NewGuid().ToString(),
             ConfigType = ConfigTypes.CurrentComponent
         };
+
+        PendingConfigRequests.TrackRequest(payload.RequestGuid, ConfigTypes.CurrentComponent, cuid);
 
         await CommandDeliverService.DeliverCommandAsync(
             CommandTypes.GetClientConfig,

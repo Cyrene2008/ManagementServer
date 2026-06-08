@@ -19,11 +19,13 @@ namespace ClassIsland.ManagementServer.Server.Controllers;
 public class ClientPluginsController(
     ILogger<ClientPluginsController> logger,
     ManagementServerContext dbContext,
-    ClientCommandDeliverService commandDeliverService) : ControllerBase
+    ClientCommandDeliverService commandDeliverService,
+    PendingConfigRequestService pendingConfigRequests) : ControllerBase
 {
     public ILogger<ClientPluginsController> Logger { get; } = logger;
     public ManagementServerContext DbContext { get; } = dbContext;
     public ClientCommandDeliverService CommandDeliverService { get; } = commandDeliverService;
+    public PendingConfigRequestService PendingConfigRequests { get; } = pendingConfigRequests;
 
     /// <summary>
     /// 获取客户端已安装的插件列表
@@ -50,6 +52,8 @@ public class ClientPluginsController(
             RequestGuid = Guid.NewGuid().ToString(),
             ConfigType = ConfigTypes.PluginList
         };
+
+        PendingConfigRequests.TrackRequest(payload.RequestGuid, ConfigTypes.PluginList, cuid);
 
         await CommandDeliverService.DeliverCommandAsync(
             CommandTypes.GetClientConfig,
